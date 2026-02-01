@@ -27,6 +27,8 @@ namespace Sarcary
         public bool allowRemoteUpdateChecks = true;
 
         // 日志级别设置
+        [Draw("导出本地")]
+        public bool exportLocalLogs = false;
         [Draw("日志级别")]
         public string logLevel = "Info";
 
@@ -98,6 +100,7 @@ namespace Sarcary
             });
 
             autoSaveSettings = DrawToggle("自动保存设置", autoSaveSettings);
+            exportLocalLogs = DrawToggle("日志导出本地", exportLocalLogs);
 
             // 日志级别选择
             GUILayout.BeginHorizontal();

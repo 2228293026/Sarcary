@@ -25,7 +25,6 @@ namespace Sarcary
         private static UnityModManager.ModEntry modEntry;
         private static string logFilePath;
         private static LogLevel minimumLogLevel = LogLevel.Info;
-        private static bool enableFileLogging = true;
         private static bool enableUnityConsole = true;
 
         // 日志颜色配置
@@ -62,12 +61,6 @@ namespace Sarcary
         {
             minimumLogLevel = level;
             Info($"Log level changed to: {level}");
-        }
-
-        public static void EnableFileLogging(bool enable)
-        {
-            enableFileLogging = enable;
-            Info($"File logging {(enable ? "enabled" : "disabled")}");
         }
 
         public static void EnableUnityConsoleLogging(bool enable)
@@ -127,7 +120,7 @@ namespace Sarcary
             }
 
             // 写入文件
-            if (enableFileLogging)
+            if (Main.Settings.exportLocalLogs)
             {
                 FileLog(formattedMessage, level, showStackTrace);
             }

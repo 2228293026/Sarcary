@@ -18,11 +18,6 @@ namespace Sarcary
         public static Harmony HarmonyInstance { get; private set; }
         public static bool IsEnabled { get; private set; }
 
-        // 版本检查相关
-        public static VersionCheck versionChecker;
-        private static float lastUpdateCheckTime = 0f;
-        private const float UPDATE_CHECK_INTERVAL = 3600f; // 1小时
-
         public static void Load(UnityModManager.ModEntry modEntry)
         {
             try
@@ -33,8 +28,6 @@ namespace Sarcary
                 // 初始化日志系统
                 Log.Initialize(modEntry);
 
-                // 初始化版本检查
-                versionChecker = new VersionCheck(modEntry);
 
                 // 注册事件
                 modEntry.OnToggle = OnToggle;
@@ -72,13 +65,26 @@ namespace Sarcary
                     // 创建Harmony实例
                     HarmonyInstance = new Harmony(modEntry.Info.Id);
 
+                    // 注册Mod并启用更新检查
+                    Sarcary.API.RegisterUpdate(
+                        modId: "Sarcary",
+                        modVersion: "1.0.0",
+                        updateCheckUrl: "https://gitee.com/hitmargin/update/raw/master/Sarcary.json"
+                    );
+
+                    // 订阅更新事件
+                    API.OnUpdateAvailable += (modId, updateInfo) =>
+                    {
+                        Log.Info($"更新可用: {modId} {updateInfo.LatestVersion}");
+                        Log.Info($"更新日志: {updateInfo.Changelog}");
+                    };
+
+
                     // 应用所有补丁
                     HarmonyInstance.PatchAll(Assembly.GetExecutingAssembly());
 
                     IsEnabled = true;
 
-                    // 检查更新
-                    versionChecker?.CheckForUpdates();
 
                     Log.Info($"Sarcary Mod enabled. Applied {HarmonyInstance.GetPatchedMethods().Count()} patches.");
                 }
@@ -150,22 +156,10 @@ namespace Sarcary
         }
 
         private static void OnUpdate(UnityModManager.ModEntry modEntry, float dt)
-        {
-            // 定期检查更新
-            if (Settings.autoCheckUpdates &&
-                Time.time - lastUpdateCheckTime > UPDATE_CHECK_INTERVAL)
-            {
-                API.CheckAllUpdates();
-                lastUpdateCheckTime = Time.time;
-            }
-
-            versionChecker?.Update();
-        }
+        { }
 
         private static void OnFixedGUI(UnityModManager.ModEntry modEntry)
         {
-            // 在GUI上显示更新通知
-            versionChecker?.DrawUpdateNotification();
 
             // 显示API的更新通知
             //API.DrawUpdateNotifications();
@@ -257,6 +251,9 @@ namespace Sarcary
             }
             return flag;
         }
-
+        private static void HandleModRegistered(string modId, string modVersion)
+        {
+            Log.Info($"New mod registered: {modId} v{modVersion}");
+        }
     }
 }
