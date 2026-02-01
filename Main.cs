@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityModManagerNet;
+using static UnityModManagerNet.UnityModManager;
 
 namespace Sarcary
 {
@@ -212,12 +213,50 @@ namespace Sarcary
 
         public static string GetModVersion()
         {
-            return mod?.Info.Version ?? "Unknown";
+            return GetCleanVersion(mod.Info.Version);
         }
 
         public static bool IsModActive()
         {
             return IsEnabled;
         }
+        public static bool CheckRequiredMod(string needMod)
+        {
+            bool flag;
+            try
+            {
+                string text = needMod;
+                List<UnityModManager.ModEntry> modEntries = UnityModManager.modEntries;
+                if (modEntries != null)
+                {
+                    foreach (UnityModManager.ModEntry modEntry in modEntries)
+                    {
+                        if (modEntry.Info.Id == text && modEntry.Enabled)
+                        {
+                            Log.Info(string.Concat(new string[]
+                            {
+                                "Found required mod: ",
+                                modEntry.Info.DisplayName,
+                                " Id: ",
+                                modEntry.Info.Id,
+                                " (Version: ",
+                                modEntry.Info.Version,
+                                ")"
+                            }));
+                            return true;
+                        }
+                    }
+                }
+                Log.Warning("Required mod not found or not enabled: " + text);
+                flag = false;
+            }
+            catch (Exception ex)
+            {
+                Log.Error("Error checking required mod: " + ex.Message);
+                flag = false;
+            }
+            return flag;
+        }
+
     }
 }
